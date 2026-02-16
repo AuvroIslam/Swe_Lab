@@ -1,5 +1,7 @@
 # School API – Teacher & Student Roles
 
+<!-- Testing branch protection rules - this is a test change -->
+
 Spring Boot API with **teacher** and **student** roles, PostgreSQL, and Docker.
 
 ## Roles
