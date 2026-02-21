@@ -1,4 +1,4 @@
-# School API – Teacher & Student Roles
+# School API – Teacher and Student Roles
 
 <!-- Testing branch protection rules - this is a test change -->
 
