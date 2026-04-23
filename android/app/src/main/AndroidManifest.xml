@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
       android:name=".MainApplication"
@@ -32,5 +33,19 @@
         android:name=".appmonitor.AppMonitorService"
         android:exported="false"
         android:foregroundServiceType="specialUse" />
+
+      <service
+        android:name=".appmonitor.AppMonitorAccessibilityService"
+        android:enabled="true"
+        android:exported="false"
+        android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+        <intent-filter>
+          <action android:name="android.accessibilityservice.AccessibilityService" />
+        </intent-filter>
+
+        <meta-data
+          android:name="android.accessibilityservice"
+          android:resource="@xml/app_monitor_accessibility_service" />
+      </service>
     </application>
 </manifest>

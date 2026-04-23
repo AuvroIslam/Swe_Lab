@@ -105,6 +105,7 @@ export interface ExerciseConfig {
 // ─── Navigation ──────────────────────────────────────────────────────────────
 
 export type RootStackParamList = {
+  Auth: undefined;
   Home: undefined;
   Exercise: { exerciseType: ExerciseType };
   Summary: undefined;

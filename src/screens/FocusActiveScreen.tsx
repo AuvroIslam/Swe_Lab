@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
+  Alert,
   TouchableOpacity,
   SafeAreaView,
   NativeModules,
@@ -37,10 +38,10 @@ export function FocusActiveScreen({ navigation }: Props) {
     sessionEndTime,
     blockedApps,
     violations,
-    penaltyReps,
+    softPenaltyPushups,
     pendingSets,
     sessionState,
-    recordViolation,
+    addProceedPenalty,
     endSession,
   } = useFocusStore();
 
@@ -69,13 +70,37 @@ export function FocusActiveScreen({ navigation }: Props) {
     };
   }, [blockedApps]);
 
-  // Listen for violations from native side
+  // Intercept restricted app attempts and ask user whether to proceed.
   useEffect(() => {
-    const sub = monitorEmitter.addListener('onAppViolation', (event: { packageName: string }) => {
-      recordViolation(event.packageName);
+    const sub = monitorEmitter.addListener('onRestrictedAppAttempt', (event: { packageName: string }) => {
+      const packageName = event.packageName;
+      const appLabel = getAppLabel(packageName);
+
+      Alert.alert(
+        'Restricted App',
+        `You tried to open ${appLabel}. Proceeding will add 1 pushup session (10 pushups).`,
+        [
+          {
+            text: 'Stay Focused',
+            style: 'cancel',
+          },
+          {
+            text: 'Proceed',
+            style: 'destructive',
+            onPress: async () => {
+              addProceedPenalty(packageName);
+              try {
+                await AppMonitor.proceedToRestrictedApp(packageName);
+              } catch {
+                // no-op; penalty is already applied by confirmed action
+              }
+            },
+          },
+        ],
+      );
     });
     return () => sub.remove();
-  }, [recordViolation]);
+  }, [addProceedPenalty]);
 
   // When state becomes "warning", navigate to warning screen
   useEffect(() => {
@@ -138,8 +163,8 @@ export function FocusActiveScreen({ navigation }: Props) {
             <Text style={s.statLabel}>SETS DUE</Text>
           </View>
           <View style={s.statCard}>
-            <Text style={s.statValue}>{penaltyReps}</Text>
-            <Text style={s.statLabel}>REPS / SET</Text>
+            <Text style={s.statValue}>{softPenaltyPushups}</Text>
+            <Text style={s.statLabel}>+1 PUSHUPS</Text>
           </View>
         </View>
 

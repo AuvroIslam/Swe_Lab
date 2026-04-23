@@ -21,8 +21,8 @@ interface Props {
 /**
  * Full-screen camera with native ML Kit pose detection frame processor.
  *
- * The "detectPose" plugin is registered natively on both Android (Kotlin)
- * and iOS (Swift). It returns 33 normalised landmarks per frame.
+ * The "detectPose" plugin is registered natively on Android (Kotlin).
+ * It returns 33 normalised landmarks per frame.
  */
 function CameraViewInner({ onPoseDetected, isActive }: Props) {
   const { hasPermission, requestPermission } = useCameraPermission();

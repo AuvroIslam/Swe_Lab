@@ -1,16 +1,22 @@
 package com.fitcounter.appmonitor
 
 import android.app.AppOpsManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Process
 import android.provider.Settings
+import android.widget.Toast
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
 class AppMonitorModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
+
+    private val accessibilityServiceComponent by lazy {
+        ComponentName(reactContext, AppMonitorAccessibilityService::class.java).flattenToString()
+    }
 
     override fun getName(): String = "AppMonitor"
 
@@ -34,6 +40,25 @@ class AppMonitorModule(private val reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Check if our accessibility service is enabled.
+     */
+    @ReactMethod
+    fun hasAccessibilityPermission(promise: Promise) {
+        promise.resolve(checkAccessibilityPermission())
+    }
+
+    /**
+     * Open accessibility settings so the user can enable the service.
+     */
+    @ReactMethod
+    fun requestAccessibilityPermission() {
+        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        reactContext.startActivity(intent)
+    }
+
+    /**
      * Start the foreground service that monitors blocked apps.
      */
     @ReactMethod
@@ -43,16 +68,16 @@ class AppMonitorModule(private val reactContext: ReactApplicationContext) :
             blockedApps.getString(i)?.let { packages.add(it) }
         }
 
-        // Set up violation callback → emit JS event
-        AppMonitorService.onViolation = { packageName ->
-            sendEvent("onAppViolation", Arguments.createMap().apply {
+        // Emit event when a restricted app is opened during an active session.
+        AppMonitorCoordinator.onRestrictedAttempt = { packageName ->
+            sendEvent("onRestrictedAppAttempt", Arguments.createMap().apply {
                 putString("packageName", packageName)
             })
         }
 
-        val intent = Intent(reactContext, AppMonitorService::class.java).apply {
-            putStringArrayListExtra(AppMonitorService.EXTRA_BLOCKED_PACKAGES, packages)
-        }
+        AppMonitorCoordinator.startSession(packages.toSet())
+
+        val intent = Intent(reactContext, AppMonitorService::class.java)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             reactContext.startForegroundService(intent)
@@ -66,9 +91,24 @@ class AppMonitorModule(private val reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     fun stopMonitoring() {
-        AppMonitorService.onViolation = null
+        AppMonitorCoordinator.stopSession()
         val intent = Intent(reactContext, AppMonitorService::class.java)
         reactContext.stopService(intent)
+    }
+
+    /**
+     * User confirmed they want to proceed to a restricted app.
+     * We allow a short bypass window and launch that app.
+     */
+    @ReactMethod
+    fun proceedToRestrictedApp(packageName: String, promise: Promise) {
+        val launched = AppMonitorCoordinator.proceedToRestrictedApp(reactContext, packageName)
+        if (launched) {
+            Toast.makeText(reactContext, "1 pushup added!", Toast.LENGTH_SHORT).show()
+            promise.resolve(true)
+        } else {
+            promise.resolve(false)
+        }
     }
 
     /**
@@ -89,6 +129,17 @@ class AppMonitorModule(private val reactContext: ReactApplicationContext) :
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
+    private fun checkAccessibilityPermission(): Boolean {
+        val enabledServices = Settings.Secure.getString(
+            reactContext.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+
+        return enabledServices
+            .split(':')
+            .any { it.equals(accessibilityServiceComponent, ignoreCase = true) }
+    }
+
     private fun sendEvent(eventName: String, params: WritableMap) {
         reactContext
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
@@ -96,7 +147,7 @@ class AppMonitorModule(private val reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Required for NativeEventEmitter on iOS — no-op on Android but must exist.
+     * Required for NativeEventEmitter compatibility — no-op on Android.
      */
     @ReactMethod
     fun addListener(eventName: String) { /* no-op */ }

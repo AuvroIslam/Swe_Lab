@@ -343,8 +343,8 @@ State management is via **Zustand** — chosen for its minimal boilerplate and g
 
 ## 9. Native Pose Detection Plugin Setup
 
-The camera integration requires a native frame-processor plugin. Here's
-the approach for each platform:
+The camera integration requires a native frame-processor plugin. This
+project currently targets Android:
 
 ### Android (Kotlin)
 
@@ -389,15 +389,6 @@ Register it in your `MainApplication`:
 ```kotlin
 FrameProcessorPluginRegistry.add(PoseDetectionPlugin::class.java)
 ```
-
-### iOS (Swift)
-
-Add to `Podfile`:
-```ruby
-pod 'GoogleMLKit/PoseDetectionAccurate'
-```
-
-Create the plugin similarly and register with VisionCamera.
 
 ### Usage in JS
 

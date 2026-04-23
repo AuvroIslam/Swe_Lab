@@ -39,7 +39,13 @@ export function FocusSetupScreen({ navigation }: Props) {
     startSession,
   } = useFocusStore();
 
-  const { hasPermission, requestPermission, requestNotificationPermission } =
+  const {
+    hasPermission,
+    hasAccessibilityPermission,
+    hasUsagePermission,
+    requestPermission,
+    requestNotificationPermission,
+  } =
     useAppMonitorPermission();
 
   const canStart = blockedApps.length > 0;
@@ -160,8 +166,18 @@ export function FocusSetupScreen({ navigation }: Props) {
         {!hasPermission && (
           <View style={s.permBox}>
             <Text style={s.permText}>
-              Usage Access permission is required to detect when you open blocked apps.
-              Tap START to open settings and grant it.
+              Enable Accessibility Service (preferred) or Usage Access (fallback)
+              so restricted apps are detected in real-time.
+              Tap START to open settings.
+            </Text>
+          </View>
+        )}
+
+        {hasPermission && !hasAccessibilityPermission && hasUsagePermission && (
+          <View style={s.permBox}>
+            <Text style={s.permText}>
+              Using Usage Access fallback. For faster detection, also enable
+              Accessibility Service.
             </Text>
           </View>
         )}
@@ -177,6 +193,8 @@ export function FocusSetupScreen({ navigation }: Props) {
               ? 'Select at least one app to block'
               : !hasPermission
                 ? 'GRANT PERMISSION & START'
+                : !hasAccessibilityPermission && hasUsagePermission
+                  ? `START ${timerMinutes} MIN (FALLBACK MODE)`
                 : `START ${timerMinutes} MIN FOCUS`}
           </Text>
         </TouchableOpacity>

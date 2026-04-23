@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { StyleSheet, Text, View } from 'react-native';
 import { RootStackParamList } from './types/pose';
 import { C } from './theme/atelier';
+import { AuthScreen } from './screens/AuthScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { ExerciseScreen } from './screens/ExerciseScreen';
 import { SummaryScreen } from './screens/SummaryScreen';
@@ -12,10 +14,20 @@ import { ViolationWarningScreen } from './screens/ViolationWarningScreen';
 import { PunishExerciseScreen } from './screens/PunishExerciseScreen';
 import { DebtPayScreen } from './screens/DebtPayScreen';
 import { FocusSummaryScreen } from './screens/FocusSummaryScreen';
+import { initializeAuth } from './services/authService';
+import { useAuthStore } from './store/authStore';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
+  const user = useAuthStore((s) => s.user);
+  const isInitializing = useAuthStore((s) => s.isInitializing);
+
+  useEffect(() => {
+    const unsubscribe = initializeAuth();
+    return unsubscribe;
+  }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -24,16 +36,53 @@ export default function App() {
           animation: 'slide_from_right',
           contentStyle: { backgroundColor: C.surface },
         }}>
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="FocusSetup" component={FocusSetupScreen} />
-        <Stack.Screen name="FocusActive" component={FocusActiveScreen} />
-        <Stack.Screen name="ViolationWarning" component={ViolationWarningScreen} />
-        <Stack.Screen name="PunishExercise" component={PunishExerciseScreen} />
-        <Stack.Screen name="DebtPay" component={DebtPayScreen} />
-        <Stack.Screen name="FocusSummary" component={FocusSummaryScreen} />
-        <Stack.Screen name="Exercise" component={ExerciseScreen} />
-        <Stack.Screen name="Summary" component={SummaryScreen} />
+        {isInitializing ? (
+          <Stack.Screen name="Auth" component={AuthBootstrapScreen} />
+        ) : user ? (
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="FocusSetup" component={FocusSetupScreen} />
+            <Stack.Screen name="FocusActive" component={FocusActiveScreen} />
+            <Stack.Screen name="ViolationWarning" component={ViolationWarningScreen} />
+            <Stack.Screen name="PunishExercise" component={PunishExerciseScreen} />
+            <Stack.Screen name="DebtPay" component={DebtPayScreen} />
+            <Stack.Screen name="FocusSummary" component={FocusSummaryScreen} />
+            <Stack.Screen name="Exercise" component={ExerciseScreen} />
+            <Stack.Screen name="Summary" component={SummaryScreen} />
+          </>
+        ) : (
+          <Stack.Screen name="Auth" component={AuthScreen} />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
+function AuthBootstrapScreen() {
+  return (
+    <View style={s.boot}>
+      <Text style={s.bootTitle}>FitCounter</Text>
+      <Text style={s.bootText}>Preparing authentication...</Text>
+    </View>
+  );
+}
+
+const s = StyleSheet.create({
+  boot: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: C.surface,
+    padding: 24,
+  },
+  bootTitle: {
+    color: C.primaryContainer,
+    fontSize: 28,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  bootText: {
+    color: C.onSurfaceVariant,
+    fontSize: 14,
+  },
+});

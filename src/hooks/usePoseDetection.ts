@@ -6,7 +6,7 @@ import { PoseLandmarks } from '../types/pose';
  *
  * Integration with react-native-vision-camera:
  *
- *   1.  A native frame-processor plugin (Android: ML Kit, iOS: ML Kit)
+ *   1.  A native Android frame-processor plugin (ML Kit)
  *       runs pose detection on each camera frame.
  *
  *   2.  The plugin returns an array of 33 landmarks to the JS thread

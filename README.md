@@ -25,7 +25,7 @@ The project is built for native performance. Camera frames are processed through
 | Frame processing | `react-native-worklets-core` |
 | Navigation | `@react-navigation/native-stack` |
 | State management | `zustand` |
-| Native platforms | Android and iOS project folders |
+| Native platform | Android |
 | Testing | Jest |
 
 ## App Flow
@@ -54,7 +54,6 @@ This keeps native camera work, movement logic, scoring, and interface state sepa
 ```text
 SystemProject/
 ├── android/                 # Android native project and app-monitoring service
-├── ios/                     # iOS native project
 ├── src/
 │   ├── components/          # Camera, overlays, summaries, and feedback UI
 │   ├── core/                # Rep counting, scoring, smoothing, and exercise rules
@@ -76,7 +75,6 @@ Install the standard React Native CLI toolchain before running the project:
 - Node.js and npm.
 - JDK 17 or a compatible React Native Android JDK.
 - Android Studio with Android SDK, platform tools, and an emulator or physical device.
-- Xcode and CocoaPods for iOS development on macOS.
 - Camera permissions enabled on the test device.
 
 For Android focus monitoring, the app also needs usage access permission because it checks whether blocked apps were opened during a focus session.
@@ -101,25 +99,12 @@ Run on Android:
 npm run android
 ```
 
-Run on iOS:
-
-```bash
-npm run ios
-```
-
-If iOS pods are not installed yet, run this first from the `ios` directory:
-
-```bash
-pod install
-```
-
 ## Available Scripts
 
 | Command | Purpose |
 | --- | --- |
 | `npm run start` | Start the Metro bundler |
 | `npm run android` | Build and launch the Android app |
-| `npm run ios` | Build and launch the iOS app |
 | `npm run test` | Run the Jest test suite |
 | `npm run lint` | Run ESLint across TypeScript source files |
 
@@ -151,7 +136,7 @@ On Android, usage access is a protected permission and must be enabled manually 
 - Keep UI-specific code inside `src/components` and `src/screens`.
 - Use Zustand stores for cross-screen exercise and focus-session state.
 - Prefer pure functions for scoring, angle calculation, smoothing, and rep detection.
-- Native pose detection code lives under the Android and iOS project folders.
+- Native pose detection code lives under the Android project folder.
 
 ## Troubleshooting
 
@@ -171,12 +156,8 @@ For Android, you can also clean Gradle from the `android` directory:
 ./gradlew clean
 ```
 
-For iOS, reinstall pods from the `ios` directory:
-
-```bash
-pod install
-```
-
 ## Documentation
 
 For a deeper explanation of the movement pipeline, scoring model, and system design decisions, see `ARCHITECTURE.md`.
+
+For Android Firebase authentication setup, see `AUTH_SETUP_ANDROID.md`.

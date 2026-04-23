@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "819034908815",
+    "project_id": "systemproject-f22df",
+    "storage_bucket": "systemproject-f22df.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:819034908815:android:f9ea7cd8c5a3ac0f6d28fa",
+        "android_client_info": {
+          "package_name": "com.fitcounter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "819034908815-p344640a6052d31o71833cds6f58ddqr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fitcounter",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "819034908815-151na90glq2nnq549cu6gbqd4sbsj4tr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBt0sUecFI9nwBvwHAtW8oR6dLTDzCRH2I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "819034908815-151na90glq2nnq549cu6gbqd4sbsj4tr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

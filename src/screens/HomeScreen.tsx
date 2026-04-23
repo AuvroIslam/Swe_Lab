@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, ExerciseType } from '../types/pose';
+import { signOutUser } from '../services/authService';
+import { useAuthStore } from '../store/authStore';
 import { useFocusStore } from '../store/focusStore';
 import { C, SHADOW } from '../theme/atelier';
 
@@ -16,6 +18,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
   const pendingSets = useFocusStore((s) => s.pendingSets);
+  const user = useAuthStore((s) => s.user);
 
   const go = (type: ExerciseType) =>
     navigation.navigate('Exercise', { exerciseType: type });
@@ -23,14 +26,28 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={s.safe}>
       <ScrollView contentContainerStyle={s.scroll}>
-        {/* ── Header ── */}
         <Text style={s.label}>SUBMISSION</Text>
+
+        <View style={s.accountRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={s.accountName}>
+              {user?.displayName ?? 'Authenticated Athlete'}
+            </Text>
+            <Text style={s.accountEmail}>{user?.email ?? 'Signed in'}</Text>
+          </View>
+          <TouchableOpacity
+            style={s.signOutBtn}
+            onPress={signOutUser}
+            activeOpacity={0.8}>
+            <Text style={s.signOutText}>LOG OUT</Text>
+          </TouchableOpacity>
+        </View>
+
         <Text style={s.headline}>Your Performance{'\n'}Dashboard</Text>
         <Text style={s.subhead}>
           Focus. Train. Conquer procrastination through discipline.
         </Text>
 
-        {/* ── Debt Card ── */}
         {pendingSets > 0 && (
           <View style={s.debtCard}>
             <View style={s.debtTop}>
@@ -41,7 +58,7 @@ export function HomeScreen({ navigation }: Props) {
               <Text style={s.debtUnit}>
                 set{pendingSets !== 1 ? 's' : ''} due
               </Text>
-              <Text style={s.debtHint}>Violation debt — pay it off now</Text>
+              <Text style={s.debtHint}>Violation debt - pay it off now</Text>
             </View>
             <TouchableOpacity
               style={s.debtBtn}
@@ -52,7 +69,6 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         )}
 
-        {/* ── Focus Card (primary CTA) ── */}
         <TouchableOpacity
           style={s.focusCard}
           onPress={() => navigation.navigate('FocusSetup')}
@@ -62,7 +78,7 @@ export function HomeScreen({ navigation }: Props) {
             <View style={{ flex: 1 }}>
               <Text style={s.focusTitle}>Start Focus Session</Text>
               <Text style={s.focusDesc}>
-                Set a timer & block apps. Open a blocked app = exercise debt.
+                Set a timer and block apps. Opening a blocked app creates exercise debt.
               </Text>
             </View>
           </View>
@@ -71,10 +87,8 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </TouchableOpacity>
 
-        {/* ── Exercise Section Label ── */}
         <Text style={s.sectionLabel}>PRACTICE DIRECTLY</Text>
 
-        {/* ── Bento Exercise Grid ── */}
         <View style={s.bentoRow}>
           <TouchableOpacity
             style={[s.bentoCard, s.bentoPrimary]}
@@ -103,13 +117,12 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </View>
 
-        {/* ── How it works ── */}
         <View style={s.howCard}>
           <Text style={s.howTitle}>How it works</Text>
           {[
             'Tap "Start Focus Session" and set your timer.',
-            'Select which apps to block (YouTube, Instagram…).',
-            'Open a blocked app → exercise debt increases.',
+            'Select which apps to block.',
+            'Open a blocked app and exercise debt increases.',
             'Complete sets to reduce your debt.',
           ].map((t, i) => (
             <View key={i} style={s.howRow}>
@@ -125,12 +138,9 @@ export function HomeScreen({ navigation }: Props) {
   );
 }
 
-/* ───────────── Styles ───────────── */
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.surface },
   scroll: { padding: 24, paddingBottom: 72 },
-
-  /* Header */
   label: {
     color: C.secondary,
     fontSize: 11,
@@ -138,6 +148,36 @@ const s = StyleSheet.create({
     letterSpacing: 2.5,
     marginTop: 20,
     marginBottom: 6,
+  },
+  accountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 10,
+  },
+  accountName: {
+    color: C.primaryContainer,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  accountEmail: {
+    color: C.onSurfaceVariant,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  signOutBtn: {
+    backgroundColor: C.surfaceContainerLow,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: C.outlineVariant,
+  },
+  signOutText: {
+    color: C.primaryContainer,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.3,
   },
   headline: {
     color: C.primaryContainer,
@@ -152,8 +192,6 @@ const s = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 28,
   },
-
-  /* Debt */
   debtCard: {
     backgroundColor: C.surfaceContainerLowest,
     borderRadius: 16,
@@ -209,8 +247,6 @@ const s = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 1.5,
   },
-
-  /* Focus CTA */
   focusCard: {
     backgroundColor: C.primaryContainer,
     borderRadius: 16,
@@ -248,8 +284,6 @@ const s = StyleSheet.create({
     marginLeft: 8,
   },
   focusArrowText: { color: C.onPrimary, fontSize: 18 },
-
-  /* Section label */
   sectionLabel: {
     color: C.onSurfaceVariant,
     fontSize: 11,
@@ -257,8 +291,6 @@ const s = StyleSheet.create({
     letterSpacing: 2,
     marginBottom: 14,
   },
-
-  /* Bento grid */
   bentoRow: { flexDirection: 'row', gap: 12, marginBottom: 28 },
   bentoCol: { flex: 1, gap: 12 },
   bentoCard: {
@@ -284,8 +316,6 @@ const s = StyleSheet.create({
   bentoEmoji: { fontSize: 26, marginBottom: 8 },
   bentoTitleLight: { color: C.onPrimary, fontSize: 15, fontWeight: '800' },
   bentoTitleDark: { color: C.onSurface, fontSize: 15, fontWeight: '800' },
-
-  /* How it works */
   howCard: {
     backgroundColor: C.surfaceContainerLow,
     borderRadius: 16,

@@ -41,6 +41,7 @@ interface FocusStore {
 
   // Debt – accumulated sets owed across sessions
   pendingSets: number;
+  softPenaltyPushups: number;
 
   // Actions
   setTimerMinutes: (m: number) => void;
@@ -49,10 +50,12 @@ interface FocusStore {
   toggleBlockedApp: (pkg: string) => void;
   startSession: () => void;
   recordViolation: (packageName: string) => void;
+  addProceedPenalty: (packageName: string) => void;
   acknowledgeWarning: () => void;
   endSession: () => void;
   resetSession: () => void;
   payDebt: (sets: number) => void;
+  resetAll: () => void;
 }
 
 export interface Violation {
@@ -73,6 +76,7 @@ export const useFocusStore = create<FocusStore>((set, get) => ({
   currentViolation: null,
 
   pendingSets: 0,
+  softPenaltyPushups: 0,
 
   setTimerMinutes: (m) => set({ timerMinutes: m }),
   setPenaltyReps: (r) => set({ penaltyReps: r }),
@@ -107,7 +111,23 @@ export const useFocusStore = create<FocusStore>((set, get) => ({
       violations: [...s.violations, violation],
       currentViolation: violation,
       pendingSets: s.pendingSets + 1,
+      softPenaltyPushups: s.softPenaltyPushups + 1,
       sessionState: 'warning',
+    }));
+  },
+
+  addProceedPenalty: (packageName) => {
+    const violation: Violation = {
+      packageName,
+      timestamp: Date.now(),
+    };
+    set((s) => ({
+      violations: [...s.violations, violation],
+      currentViolation: violation,
+      pendingSets: s.pendingSets + 1,
+      softPenaltyPushups: s.softPenaltyPushups + 1,
+      // Keep session active; this path is user-confirmed proceed.
+      sessionState: 'active',
     }));
   },
 
@@ -124,10 +144,26 @@ export const useFocusStore = create<FocusStore>((set, get) => ({
       sessionEndTime: null,
       violations: [],
       currentViolation: null,
+      softPenaltyPushups: 0,
     }),
 
   payDebt: (sets) =>
     set((s) => ({
       pendingSets: Math.max(0, s.pendingSets - sets),
     })),
+
+  resetAll: () =>
+    set({
+      timerMinutes: 30,
+      blockedApps: [],
+      penaltyReps: 10,
+      penaltyExercise: 'pushup',
+      sessionState: 'idle',
+      sessionStartedAt: null,
+      sessionEndTime: null,
+      violations: [],
+      currentViolation: null,
+      pendingSets: 0,
+      softPenaltyPushups: 0,
+    }),
 }));
