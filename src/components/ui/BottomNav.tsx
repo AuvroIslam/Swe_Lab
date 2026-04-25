@@ -4,7 +4,7 @@ import { D, SP, SH } from '../../theme/design';
 
 export type BottomNavTab = 'Home' | 'Fitness' | 'Leaderboard' | 'Profile';
 
-type NavAny = { navigate: (screen: string, params?: any) => void };
+type NavAny = { navigate: (screen: any, params?: any) => void };
 
 const TABS: { name: BottomNavTab; icon: any }[] = [
   { name: 'Home',        icon: require('../../../Elements/Icon(home).png') },
@@ -25,11 +25,13 @@ export function BottomNav({ current, navigation }: { current: BottomNavTab; navi
             onPress={() => { if (!active) navigation.navigate(name); }}
             activeOpacity={0.7}>
             <View style={[s.pill, active && s.pillActive]}>
-              <Image
-                source={icon}
-                style={[s.icon, { tintColor: active ? D.primary : D.textMuted }]}
-                resizeMode="contain"
-              />
+              <View style={s.iconWrap}>
+                <Image
+                  source={icon}
+                  style={[s.icon, { tintColor: active ? D.primary : D.textMuted }]}
+                  resizeMode="contain"
+                />
+              </View>
             </View>
           </TouchableOpacity>
         );
@@ -50,12 +52,13 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: D.border,
     paddingTop: SP.sm,
-    paddingBottom: SP.lg,
-    paddingHorizontal: SP.xl,
+    paddingBottom: SP.sm,
+    paddingHorizontal: SP.sm,
     ...SH.card,
   },
   tab:       { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  pill:      { borderRadius: 20, padding: SP.sm },
+  pill:      { borderRadius: 18, padding: 6 },
   pillActive:{ backgroundColor: D.primaryLight },
-  icon:      { width: 28, height: 28 },
+  iconWrap:  { width: 30, height: 30, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  icon:      { width: 52, height: 52 },
 });

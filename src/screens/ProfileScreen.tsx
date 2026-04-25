@@ -11,7 +11,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/pose';
 import { useAuthStore } from '../store/authStore';
-import { useXPStore, calcLevel } from '../store/xpStore';
+import { useXPStore } from '../store/xpStore';
 import { useFocusStore } from '../store/focusStore';
 import { signOutUser } from '../services/authService';
 import { Card } from '../components/ui/Card';
@@ -37,7 +37,8 @@ export function ProfileScreen({ navigation }: Props) {
   const user = useAuthStore((s) => s.user);
   const { xp, level } = useXPStore();
   const { pendingSets } = useFocusStore();
-  const { selectedIndex, selectAvatar } = useAvatarStore();
+  const { selectedIndex: rawIndex, selectAvatar } = useAvatarStore();
+  const selectedIndex = Math.min(Math.max(rawIndex ?? 0, 0), AVATARS.length - 1);
   const xpProgress = (xp % 100) / 100;
   const xpToNext = 100 - (xp % 100);
 
@@ -99,6 +100,12 @@ export function ProfileScreen({ navigation }: Props) {
           ))}
         </View>
 
+        {/* ── Avatar Selection ── */}
+        <Text style={s.sectionTitle}>Choose Avatar</Text>
+        <Card style={{ marginBottom: SP.xl }} padding={SP.lg}>
+          <AvatarSelector selectedAvatar={selectedIndex} onSelectAvatar={selectAvatar} />
+        </Card>
+
         {/* ── Illustration ── */}
         <View style={s.rewardRow}>
           <Image source={require('../../Elements/SuccessReward.png')} style={s.rewardImg} resizeMode="contain" />
@@ -126,9 +133,6 @@ export function ProfileScreen({ navigation }: Props) {
 const s = StyleSheet.create({
   safe:   { flex: 1, backgroundColor: D.bg },
   scroll: { paddingHorizontal: SP.xl, paddingBottom: 96, paddingTop: SP.base },
-
-  backBtn:  { alignSelf: 'flex-start', marginBottom: SP.base },
-  backText: { color: D.primary, fontSize: 15, fontWeight: '600' },
 
   hero:       { alignItems: 'center', marginBottom: SP.xl },
   avatarWrap: { width: 96, height: 96, borderRadius: 48, overflow: 'hidden', borderWidth: 3, borderColor: D.primary, marginBottom: SP.md, ...SH.card },

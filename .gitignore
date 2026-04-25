@@ -1,3 +1,6 @@
+# Secret keys — never commit
+src/config/keys.ts
+
 node_modules/
 .bundle/
 vendor/bundle/

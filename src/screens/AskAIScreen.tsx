@@ -15,11 +15,23 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/pose';
 import { D, SP, R, SH } from '../theme/design';
+import { GROQ_API_KEY } from '../config/keys';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AskAI'>;
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const MODEL = 'llama-3.1-8b-instant';
 
-// Physical phone uses machine's LAN IP; change if your IP changes
-const BACKEND_URL = 'http://192.168.0.103:3000';
+const SYSTEM_PROMPT =
+  'You are FitCoach AI, a friendly and motivating fitness coach inside the FitCounter app. ' +
+  'Give practical, concise advice about exercise form, workout plans, and motivation. ' +
+  'Be encouraging. Always finish your response completely — never stop mid-sentence. ' +
+  'Keep your response within 1024 tokens so it is never cut off. ' +
+  'IMPORTANT: Reply in plain text only. Do NOT use markdown, asterisks, bold, italics, bullet dashes, or any formatting symbols.';
+
+interface GroqMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
 
 interface Message {
   id: number;
@@ -27,21 +39,48 @@ interface Message {
   text: string;
 }
 
-async function askQuestion(question: string): Promise<string> {
-  const res = await fetch(`${BACKEND_URL}/ask`, {
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/#{1,6}\s*/g, '')           // ## headings
+    .replace(/\*\*(.+?)\*\*/g, '$1')     // **bold**
+    .replace(/\*(.+?)\*/g, '$1')         // *italic*
+    .replace(/__(.+?)__/g, '$1')         // __bold__
+    .replace(/_(.+?)_/g, '$1')           // _italic_
+    .replace(/`{1,3}[^`]*`{1,3}/g, '')  // `code` / ```blocks```
+    .replace(/^\s*[-*+]\s+/gm, '• ')    // - bullet → •
+    .replace(/^\s*\d+\.\s+/gm, '')      // 1. numbered list
+    .replace(/\[(.+?)\]\(.+?\)/g, '$1') // [link](url)
+    .replace(/\n{3,}/g, '\n\n')         // collapse excess blank lines
+    .trim();
+}
+
+async function callGroq(history: GroqMessage[]): Promise<string> {
+  const res = await fetch(GROQ_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question }),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history],
+      max_tokens: 1024,
+      temperature: 0.7,
+    }),
   });
-  if (!res.ok) throw new Error(`Server error: ${res.status}`);
+  if (!res.ok) {
+    const text = await res.text().catch(() => String(res.status));
+    throw new Error(`Groq ${res.status}: ${text}`);
+  }
   const data = await res.json();
-  return data.answer ?? '';
+  const raw = (data.choices?.[0]?.message?.content as string) ?? 'No response received.';
+  return stripMarkdown(raw);
 }
 
 const WELCOME: Message = {
   id: 0,
   role: 'bot',
-  text: "Hi! I'm your AI fitness coach 💪 Ask me anything about your workouts, form tips, or how to stay focused!",
+  text: "Hi! I'm your AI fitness coach 💪 Ask me anything about workouts, form tips, or staying focused!",
 };
 
 export function AskAIScreen({ navigation }: Props) {
@@ -50,6 +89,7 @@ export function AskAIScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const idRef = useRef(1);
+  const historyRef = useRef<GroqMessage[]>([]);
 
   const send = async () => {
     const q = input.trim();
@@ -60,18 +100,24 @@ export function AskAIScreen({ navigation }: Props) {
     setInput('');
     setLoading(true);
 
+    historyRef.current = [...historyRef.current, { role: 'user', content: q }];
+
+    let botText = '';
     try {
-      const answer = await askQuestion(q);
-      setMessages((prev) => [...prev, { id: idRef.current++, role: 'bot', text: answer }]);
-    } catch (e: any) {
-      setMessages((prev) => [
-        ...prev,
-        { id: idRef.current++, role: 'bot', text: `⚠️ ${e?.message ?? 'Something went wrong. Is the backend running?'}` },
-      ]);
-    } finally {
-      setLoading(false);
-      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+      botText = await callGroq(historyRef.current);
+      historyRef.current = [...historyRef.current, { role: 'assistant', content: botText }];
+      // keep history bounded to last 20 turns
+      if (historyRef.current.length > 20) {
+        historyRef.current = historyRef.current.slice(-20);
+      }
+    } catch (err: unknown) {
+      botText = `⚠️ ${err instanceof Error ? err.message : 'Something went wrong. Check your connection.'}`;
     }
+
+    const botId = idRef.current++;
+    setMessages((prev) => [...prev, { id: botId, role: 'bot', text: botText }]);
+    setLoading(false);
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
   };
 
   return (
@@ -84,10 +130,10 @@ export function AskAIScreen({ navigation }: Props) {
             <Text style={s.back}>← Back</Text>
           </TouchableOpacity>
           <View style={s.headerCenter}>
-            <Image source={require('../../Elements/AiChatBot.png')} style={s.botIcon} />
+            <Image source={require('../../Elements/AiChatBot.png')} style={s.botIcon} resizeMode="cover" />
             <View>
               <Text style={s.headerTitle}>AI Coach</Text>
-              <Text style={s.headerSub}>Always here to help</Text>
+              <Text style={s.headerSub}>Powered by Groq</Text>
             </View>
           </View>
           <View style={{ width: 50 }} />
@@ -103,7 +149,7 @@ export function AskAIScreen({ navigation }: Props) {
           {messages.map((msg) => (
             <View key={msg.id} style={[s.msgRow, msg.role === 'user' ? s.msgRowUser : s.msgRowBot]}>
               {msg.role === 'bot' && (
-                <Image source={require('../../Elements/AiChatBot.png')} style={s.botAvatar} />
+                <Image source={require('../../Elements/AiChatBot.png')} style={s.botAvatar} resizeMode="cover" />
               )}
               <View style={[s.bubble, msg.role === 'user' ? s.bubbleUser : s.bubbleBot]}>
                 <Text style={[s.bubbleText, msg.role === 'user' ? s.bubbleTextUser : s.bubbleTextBot]}>
@@ -114,8 +160,8 @@ export function AskAIScreen({ navigation }: Props) {
           ))}
           {loading && (
             <View style={[s.msgRow, s.msgRowBot]}>
-              <Image source={require('../../Elements/AiChatBot.png')} style={s.botAvatar} />
-              <View style={s.bubbleBot}>
+              <Image source={require('../../Elements/AiChatBot.png')} style={s.botAvatar} resizeMode="cover" />
+              <View style={[s.bubble, s.bubbleBot]}>
                 <ActivityIndicator color={D.primary} size="small" />
               </View>
             </View>
@@ -132,7 +178,6 @@ export function AskAIScreen({ navigation }: Props) {
             placeholderTextColor={D.textLight}
             multiline
             maxLength={400}
-            onSubmitEditing={send}
           />
           <TouchableOpacity
             style={[s.sendBtn, (!input.trim() || loading) && s.sendBtnOff]}
@@ -151,10 +196,10 @@ export function AskAIScreen({ navigation }: Props) {
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: D.bg },
 
-  header:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SP.xl, paddingVertical: SP.base, borderBottomWidth: 1, borderColor: D.border },
+  header:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SP.xl, paddingVertical: SP.base, borderBottomWidth: 1, borderColor: D.border, backgroundColor: D.card },
   back:         { color: D.primary, fontSize: 15, fontWeight: '600', minWidth: 50 },
   headerCenter: { flexDirection: 'row', alignItems: 'center', gap: SP.md },
-  botIcon:      { width: 40, height: 40, borderRadius: 20 },
+  botIcon:      { width: 40, height: 40, borderRadius: 20, backgroundColor: D.primaryLight },
   headerTitle:  { fontSize: 15, fontWeight: '800', color: D.text },
   headerSub:    { fontSize: 11, color: D.textMuted },
 
@@ -164,14 +209,14 @@ const s = StyleSheet.create({
   msgRow:     { flexDirection: 'row', alignItems: 'flex-end', gap: SP.sm, maxWidth: '85%' },
   msgRowUser: { alignSelf: 'flex-end', flexDirection: 'row-reverse' },
   msgRowBot:  { alignSelf: 'flex-start' },
-  botAvatar:  { width: 30, height: 30, borderRadius: 15 },
+  botAvatar:  { width: 30, height: 30, borderRadius: 15, backgroundColor: D.primaryLight },
 
-  bubble:        { borderRadius: R.card, paddingHorizontal: SP.base, paddingVertical: SP.md, maxWidth: '100%' },
-  bubbleUser:    { backgroundColor: D.primary, borderBottomRightRadius: 4, ...SH.soft },
-  bubbleBot:     { backgroundColor: D.card, borderBottomLeftRadius: 4, ...SH.soft },
-  bubbleText:    { fontSize: 14, lineHeight: 21 },
-  bubbleTextUser:{ color: D.onPrimary },
-  bubbleTextBot: { color: D.text },
+  bubble:         { borderRadius: R.card, paddingHorizontal: SP.base, paddingVertical: SP.md, maxWidth: '100%' },
+  bubbleUser:     { backgroundColor: D.primary, borderBottomRightRadius: 4, ...SH.soft },
+  bubbleBot:      { backgroundColor: D.card, borderBottomLeftRadius: 4, minWidth: 48, alignItems: 'center', ...SH.soft },
+  bubbleText:     { fontSize: 14, lineHeight: 21 },
+  bubbleTextUser: { color: D.onPrimary },
+  bubbleTextBot:  { color: D.text },
 
   inputBar: {
     flexDirection: 'row',

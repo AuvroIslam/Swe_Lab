@@ -44,7 +44,6 @@ export function HomeScreen({ navigation }: Props) {
     <SafeAreaView style={s.safe}>
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
-
         {/* ── Top Bar ── */}
         <View style={s.topBar}>
           <TouchableOpacity onPress={() => navigation.navigate('Profile')} activeOpacity={0.8} style={s.avatarBtn}>
@@ -113,10 +112,12 @@ export function HomeScreen({ navigation }: Props) {
             <Text style={s.focusTitle}>Start a Focus{'\n'}Session</Text>
             <Text style={s.focusDesc}>Block distractions. Build discipline.</Text>
             <View style={s.focusBtn}>
-              <Text style={s.focusBtnText}>Let's Go →</Text>
+              <Text style={s.focusBtnText}>Let's Go</Text>
             </View>
           </View>
-          <Image source={require('../../Elements/FocusMode.png')} style={s.focusImg} />
+          <View style={s.focusImgWrap}>
+            <Image source={require('../../Elements/FocusMode.png')} style={s.focusImg} />
+          </View>
         </TouchableOpacity>
 
         {/* ── Quick Start ── */}
@@ -147,7 +148,9 @@ export function HomeScreen({ navigation }: Props) {
               style={s.exploreCard}
               onPress={() => navigation.navigate(screen)}
               activeOpacity={0.8}>
-              <Image source={icon} style={s.exploreIcon} resizeMode="contain" />
+              <View style={s.exploreIconWrap}>
+                <Image source={icon} style={s.exploreIcon} resizeMode="contain" />
+              </View>
               <Text style={s.exploreLabel}>{label}</Text>
             </TouchableOpacity>
           ))}
@@ -166,16 +169,16 @@ const s = StyleSheet.create({
   // Top bar
   topBar:    { flexDirection: 'row', alignItems: 'center', marginBottom: SP.lg, gap: SP.md },
   avatarBtn: { alignItems: 'center', justifyContent: 'center' },
-  avatarWrap:{ width: 48, height: 48, borderRadius: 24, overflow: 'hidden', borderWidth: 2.5, borderColor: D.primary },
-  avatar:    { width: 48, height: 48 },
+  avatarWrap:{ width: 48, height: 48, borderRadius: 24, overflow: 'hidden', borderWidth: 2.5, borderColor: D.primary, alignItems: 'center', justifyContent: 'center' },
+  avatar:    { width: 64, height: 64 },
   topMid:    { flex: 1, justifyContent: 'center' },
   greeting:  { fontSize: 16, fontWeight: '700', color: D.text },
   levelRow:  { flexDirection: 'row', alignItems: 'center', gap: SP.sm, marginTop: 4 },
   levelBadge:{ backgroundColor: D.primary, borderRadius: R.pill, paddingHorizontal: 10, paddingVertical: 3 },
   levelText: { color: D.onPrimary, fontSize: 11, fontWeight: '800' },
   xpText:    { fontSize: 12, color: D.textMuted, fontWeight: '600' },
-  notifBtn:  { width: 44, height: 44, borderRadius: 22, backgroundColor: D.card, alignItems: 'center', justifyContent: 'center', ...SH.soft },
-  notifIcon: { width: 24, height: 24, tintColor: D.primary },
+  notifBtn:  { width: 44, height: 44, borderRadius: 22, backgroundColor: D.card, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', ...SH.soft },
+  notifIcon: { width: 56, height: 56, tintColor: D.primary },
 
   // XP card
   xpCard:  { marginBottom: SP.lg },
@@ -198,7 +201,7 @@ const s = StyleSheet.create({
     borderRadius: R.cardLg,
     padding: SP.xl,
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     marginBottom: SP.xl,
     overflow: 'hidden',
     ...SH.button,
@@ -207,9 +210,10 @@ const s = StyleSheet.create({
   focusTag:    { fontSize: 10, fontWeight: '800', color: D.primaryMuted, letterSpacing: 2, marginBottom: SP.sm },
   focusTitle:  { fontSize: 22, fontWeight: '800', color: D.onPrimary, lineHeight: 28, marginBottom: SP.sm },
   focusDesc:   { fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: SP.lg },
-  focusBtn:    { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: R.pill, paddingHorizontal: 18, paddingVertical: 8 },
-  focusBtnText:{ color: D.onPrimary, fontWeight: '700', fontSize: 14 },
-  focusImg:    { width: 100, height: 100, resizeMode: 'contain', marginLeft: -8 },
+  focusBtn:    { alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: R.pill, paddingHorizontal: 18, paddingVertical: 8, alignItems: 'center' },
+  focusBtnText:{ color: D.onPrimary, fontWeight: '700', fontSize: 14, textAlign: 'center' },
+  focusImgWrap: { width: 100, height: 100, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginLeft: SP.sm },
+  focusImg:    { width: 120, height: 120, resizeMode: 'contain' },
 
   // Section
   sectionTitle:{ fontSize: 16, fontWeight: '800', color: D.text, marginBottom: SP.md, marginTop: SP.sm },
@@ -223,6 +227,7 @@ const s = StyleSheet.create({
   // Explore
   exploreRow:  { flexDirection: 'row', gap: SP.md, marginBottom: SP.xl },
   exploreCard: { flex: 1, backgroundColor: D.card, borderRadius: R.card, paddingVertical: SP.lg, paddingHorizontal: SP.sm, alignItems: 'center', gap: SP.sm, ...SH.soft },
-  exploreIcon: { width: 40, height: 40 },
+  exploreIconWrap: { width: 44, height: 44, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  exploreIcon: { width: 80, height: 80 },
   exploreLabel:{ fontSize: 11, fontWeight: '700', color: D.text, textAlign: 'center' },
 });

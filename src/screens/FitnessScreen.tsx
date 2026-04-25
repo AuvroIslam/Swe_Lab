@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -158,9 +157,8 @@ const s = StyleSheet.create({
   safe:   { flex: 1, backgroundColor: D.bg },
   scroll: { paddingHorizontal: SP.xl, paddingBottom: 96, paddingTop: SP.base },
 
-  header:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SP.xl },
-  back:         { color: D.primary, fontSize: 15, fontWeight: '600', minWidth: 50 },
-  title:        { fontSize: 20, fontWeight: '800', color: D.text },
+  header:       { marginBottom: SP.lg },
+  title:        { fontSize: 22, fontWeight: '900', color: D.text },
   sectionTitle: { fontSize: 16, fontWeight: '800', color: D.text, marginBottom: SP.md, marginTop: SP.sm },
 
   statsRow: { flexDirection: 'row', gap: SP.md, marginBottom: SP.xl },
