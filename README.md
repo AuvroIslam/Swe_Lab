@@ -24,13 +24,13 @@ The camera counts your reps in real time and scores your form. You cannot fake i
 
 <table align="center">
   <tr>
-    <td align="center" width="220"><img src="ImagesForGithub/phone1.png" width="200" alt="Live Rep Counting" /></td>
+    <td align="center" width="220"><img src="ImagesForGithub/Iphone1.png" width="200" alt="Live Rep Counting" /></td>
     <td width="16"></td>
-    <td align="center" width="220"><img src="ImagesForGithub/phone2.png" width="200" alt="Home Screen" /></td>
+    <td align="center" width="220"><img src="ImagesForGithub/Iphone2.png" width="200" alt="Home Screen" /></td>
     <td width="16"></td>
-    <td align="center" width="220"><img src="ImagesForGithub/phone3.png" width="200" alt="Workout Plan" /></td>
+    <td align="center" width="220"><img src="ImagesForGithub/Iphone3.png" width="200" alt="Workout Plan" /></td>
     <td width="16"></td>
-    <td align="center" width="220"><img src="ImagesForGithub/phone4.png" width="200" alt="AI Coach" /></td>
+    <td align="center" width="220"><img src="ImagesForGithub/Iphone4.png" width="200" alt="AI Coach" /></td>
   </tr>
   <tr>
     <td align="center"><sub><b>Live Rep Counting</b></sub></td>
