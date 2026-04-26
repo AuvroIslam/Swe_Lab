@@ -1,83 +1,217 @@
-# FitCounter
+<p align="center">
+  <img src="ImagesForGithub/AppLogo.png" width="120" alt="FitCounter Logo" />
+</p>
 
-FitCounter is a React Native CLI mobile app that turns focus discipline into exercise accountability. It combines real-time pose tracking, rep counting, exercise scoring, and focus-session enforcement so users can practice push-ups, sit-ups, and squats while paying off distraction debt created during blocked-app violations.
+<h1 align="center">FitCounter</h1>
 
-The project is built for native performance. Camera frames are processed through `react-native-vision-camera`, native pose-detection plugins, and worklets so exercise feedback can happen while the user moves instead of after a recording ends.
+<p align="center">
+  Your phone distractions become your workout.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white" />
+  <img src="https://img.shields.io/badge/React_Native-0.74-61DAFB?style=flat-square&logo=react&logoColor=white" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/ML_Kit-Pose_Detection-4285F4?style=flat-square&logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/Firebase-Auth_+_Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black" />
+</p>
+
+---
+
+## What is FitCounter?
+
+FitCounter is an Android fitness app that connects two problems most people face separately — **phone addiction** and **skipping exercise**.
+
+Start a Focus Session, pick apps to avoid (YouTube, Instagram, TikTok), and set a timer. If you open one of those apps, you earn **exercise debt** — a set of push-ups, sit-ups, or squats that must be completed using the phone camera before the debt clears.
+
+The camera counts your reps in real time and scores your form. You cannot fake it.
+
+---
+
+## Screenshots
+
+<p align="center">
+  <img src="ImagesForGithub/Phone2.png" width="220" alt="Home Screen" />
+  &nbsp;&nbsp;
+  <img src="ImagesForGithub/Phone1.png" width="220" alt="Live Rep Counting" />
+  &nbsp;&nbsp;
+  <img src="ImagesForGithub/phone3.png" width="220" alt="AI Coach Chat" />
+  &nbsp;&nbsp;
+  <img src="ImagesForGithub/Phone4.png" width="220" alt="Workout Plan & Calendar" />
+</p>
+
+---
 
 ## Core Features
 
-- Real-time camera-based exercise tracking.
-- Push-up, sit-up, and squat rep counting.
-- Per-rep form, depth, stability, and tempo scoring.
-- Exercise summaries after each set.
-- Focus sessions with app-blocking violation flow.
-- Exercise debt system for missed focus discipline.
-- Native Android app-monitoring service.
-- React Navigation screen flow for training, focus, warnings, and summaries.
+| Feature | Description |
+|---|---|
+| **Real-time rep counting** | Camera-based pose detection counts push-ups, sit-ups, and squats at 30 fps |
+| **Rep scoring** | Every rep scored 0–100 across depth, form, stability, and tempo |
+| **Focus sessions** | Block distracting apps during a timed session |
+| **Exercise debt** | Opening a blocked app adds penalty sets — paid back through camera-verified reps |
+| **AI Coach** | Chat interface for personalised workout plans powered by Groq |
+| **Workout plans** | Instructor-designed plans or AI-generated custom plans |
+| **Google Calendar sync** | Workout schedule pushed directly to your calendar |
+| **XP & Leaderboard** | Earn XP per session, compete on a global Firebase leaderboard |
+
+---
+
+## Supported Exercises
+
+<p align="center">
+  <img src="ImagesForGithub/pushup.png" width="220" alt="Push-up" />
+  &nbsp;&nbsp;
+  <img src="ImagesForGithub/situps.png" width="220" alt="Sit-up" />
+  &nbsp;&nbsp;
+  <img src="ImagesForGithub/squats.png" width="220" alt="Squat" />
+</p>
+
+<p align="center"><b>Push-ups &nbsp;&nbsp;|&nbsp;&nbsp; Sit-ups &nbsp;&nbsp;|&nbsp;&nbsp; Squats</b></p>
+
+---
+
+## System Architecture
+
+<p align="center">
+  <img src="ImagesForGithub/SystemArchi.jpeg" width="800" alt="System Architecture" />
+</p>
+
+The app is structured in four layers:
+
+1. **React Native UI** — screens, overlays, and navigation
+2. **Zustand State Stores** — exercise, focus, auth, calendar persisted via AsyncStorage
+3. **TypeScript Core Logic** — pure modules for angle calculation, smoothing, state machine, and scoring
+4. **Native Android (Kotlin)** — ML Kit pose detection plugin, AccessibilityService for app monitoring
+
+The JS/native boundary is crossed via `runOnJS()` from VisionCamera worklets, keeping the camera thread unblocked.
+
+---
+
+## How Rep Counting Works
+
+Each camera frame passes through a five-stage pipeline:
+
+```
+Camera Frame (native thread)
+     ↓
+Google ML Kit — 33 body landmarks at ~30 fps
+     ↓
+Joint Angle Calculation — dot product formula on 3 landmarks
+     ↓
+Signal Smoothing — spike rejection (>35°/frame) + EMA filter (α=0.4)
+     ↓
+State Machine — IDLE → DOWN → UP → rep counted (3-frame debounce)
+     ↓
+Scoring — depth×0.4 + form×0.3 + stability×0.2 + tempo×0.1
+```
+
+Reps scoring below 40 are not counted. This is the anti-cheat layer.
+
+### Why Google ML Kit over alternatives
+
+| Option | Reason not used |
+|---|---|
+| MediaPipe | Ships with skeleton rendering pipeline overhead we don't need — we only use landmark coordinates to calculate angles |
+| OpenPose | Requires GPU; too slow for real-time mobile |
+| TensorFlow Lite | Requires training your own model |
+| PoseNet | Only 17 landmarks; deprecated |
+| Accelerometer | Trivial to cheat; cannot detect form |
+
+ML Kit runs entirely on-device with no API key, returns clean landmark coordinates via STREAM\_MODE at 30 fps, and integrates directly into VisionCamera's native frame processor.
+
+---
 
 ## Tech Stack
 
-| Area | Technology |
-| --- | --- |
-| Mobile framework | React Native CLI `0.74` |
+| Layer | Technology |
+|---|---|
+| App framework | React Native CLI `0.74` |
 | Language | TypeScript |
-| Camera | `react-native-vision-camera` |
-| Frame processing | `react-native-worklets-core` |
-| Navigation | `@react-navigation/native-stack` |
-| State management | `zustand` |
-| Native platform | Android |
-| Testing | Jest |
+| Camera + frame processing | `react-native-vision-camera` v4 + `react-native-worklets-core` |
+| Pose detection | Google ML Kit Accurate Pose (Kotlin native plugin) |
+| State management | Zustand |
+| Navigation | React Navigation native stack |
+| Auth + database | Firebase Auth + Firestore |
+| AI backend | Node.js + Groq API |
+| App monitoring | Android AccessibilityService |
 
-## App Flow
+> **Why React Native CLI over Expo:** Expo has no frame processor API. VisionCamera's frame processors run ML Kit on a dedicated native thread at 30 fps — essential for real-time rep detection. Expo would require ejecting anyway.
 
-FitCounter starts at a performance dashboard. Users can either begin a focus session or practice exercises directly.
-
-For direct training, the user chooses an exercise and performs reps in front of the camera. Pose landmarks are converted into joint angles, smoothed, classified into movement phases, counted as reps, and scored.
-
-For focus mode, the user starts a timer and selects apps to avoid. Opening a blocked app creates exercise debt, which must be paid back through completed exercise sets.
-
-## How Pose Tracking Works
-
-The exercise pipeline is designed as a sequence of small modules:
-
-1. The camera frame is captured through VisionCamera.
-2. Native pose detection produces body landmarks.
-3. Landmark positions are converted into movement-specific joint angles.
-4. Angle smoothing filters out noisy frame-to-frame spikes.
-5. A rep state machine detects movement phases.
-6. Completed reps are scored and sent to the UI.
-
-This keeps native camera work, movement logic, scoring, and interface state separated. Most exercise logic lives in pure TypeScript modules under `src/core`, which makes the behavior easier to test and tune.
+---
 
 ## Project Structure
 
-```text
+```
 SystemProject/
-├── android/                 # Android native project and app-monitoring service
+├── android/                  # Native Android project + Kotlin modules
+│   └── app/src/main/java/    # PoseDetectorPlugin, AppMonitor, AccessibilityService
 ├── src/
-│   ├── components/          # Camera, overlays, summaries, and feedback UI
-│   ├── core/                # Rep counting, scoring, smoothing, and exercise rules
-│   ├── hooks/               # Pose detection, exercise tracking, and permission hooks
-│   ├── screens/             # App screens and navigation destinations
-│   ├── store/               # Zustand state stores
-│   ├── theme/               # Shared colors and visual tokens
-│   ├── types/               # Pose and navigation types
-│   └── utils/               # Constants and shared helpers
-├── app.json
-├── package.json
-└── tsconfig.json
+│   ├── components/           # CameraView, ExerciseOverlay, FeedbackBanner, SetSummary
+│   ├── core/                 # angles.ts, smoothing.ts, stateMachine.ts, scoring.ts
+│   │   └── exercises/        # pushup.ts, situp.ts, squat.ts, angleDetector.ts
+│   ├── hooks/                # usePoseDetection, useExerciseTracker
+│   ├── screens/              # All app screens
+│   ├── store/                # Zustand stores (exercise, focus, auth, xp, calendar)
+│   ├── theme/                # Design tokens and colors
+│   └── utils/                # Constants (angle thresholds, score weights)
+├── backend/                  # Node.js AI chat backend
+└── ImagesForGithub/          # README assets
 ```
 
-## Prerequisites
+---
 
-Install the standard React Native CLI toolchain before running the project:
+## Getting Started
 
-- Node.js and npm.
-- JDK 17 or a compatible React Native Android JDK.
-- Android Studio with Android SDK, platform tools, and an emulator or physical device.
-- Camera permissions enabled on the test device.
+### Prerequisites
 
-For Android focus monitoring, the app also needs usage access permission because it checks whether blocked apps were opened during a focus session.
+- Node.js 18+
+- JDK 17
+- Android Studio with Android SDK and platform tools
+- A physical Android device or emulator with camera support
+
+### Installation
+
+```bash
+# Clone the repo
+git clone <repo-url>
+cd SystemProject
+
+# Install dependencies
+npm install
+
+# Copy keys file and fill in your Firebase + Google credentials
+cp src/config/keys.example.ts src/config/keys.ts
+
+# Run on Android
+npx react-native run-android
+```
+
+### Backend (AI Chat)
+
+```bash
+cd backend
+cp .env.example .env   # add your Groq API key
+npm install
+node index.js
+```
+
+### Permissions required on device
+
+- **Camera** — for pose detection
+- **Usage Access** — for focus mode app monitoring (grant manually in Android settings)
+
+---
+
+## Running Tests
+
+```bash
+# From SystemProject/
+npm test
+
+# From backend/
+cd backend && npm test
+```
 
 ## Getting Started
 
