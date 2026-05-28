@@ -104,24 +104,15 @@ export interface ExerciseConfig {
 
 // ─── Navigation ──────────────────────────────────────────────────────────────
 
+export type MathDifficulty = 'easy' | 'medium' | 'hard';
+
 export type RootStackParamList = {
-  Auth: undefined;
   Home: undefined;
+  Stats: undefined;
   Exercise: { exerciseType: ExerciseType };
   Summary: undefined;
-  FocusSetup: undefined;
-  FocusActive: undefined;
-  ViolationWarning: undefined;
-  PunishExercise: { targetReps: number; exerciseType: ExerciseType; setsToPayOff: number };
-  DebtPay: undefined;
-  FocusSummary: undefined;
-  Leaderboard: undefined;
-  Fitness: undefined;
-  AskAI: undefined;
-  Profile: undefined;
-  PlanSelection: undefined;
-  InstructorPlanSetup: undefined;
-  ExercisePlan: undefined;
-  DailyWorkout: undefined;
-  AIPlanChat: undefined;
+  AlarmSetup: { alarmId?: string } | undefined;
+  AlarmRing: { alarmId: string };
+  DismissExercise: { alarmId: string; exerciseType: ExerciseType; reps: number };
+  MathProblem: { alarmId: string; problemCount: number; difficulty: MathDifficulty };
 };

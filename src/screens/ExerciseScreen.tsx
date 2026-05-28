@@ -8,6 +8,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useExerciseTracker } from '../hooks/useExerciseTracker';
 import { useExerciseStore } from '../store/exerciseStore';
+import { useStatsStore } from '../store/statsStore';
 import { D, R, SP } from '../theme/design';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Exercise'>;
@@ -30,6 +31,7 @@ const MOTIVATIONS = [
 export function ExerciseScreen({ route, navigation }: Props) {
   const { exerciseType } = route.params;
   const { processLandmarks, finishSet } = useExerciseTracker(exerciseType);
+  const recordExercise = useStatsStore((s) => s.recordExercise);
 
   const [hasBody, setHasBody]     = useState(false);
   const [repFlash, setRepFlash]   = useState(false);
@@ -65,8 +67,9 @@ export function ExerciseScreen({ route, navigation }: Props) {
 
   const handleStop = useCallback(() => {
     finishSet();
+    if (validRepCount > 0) recordExercise(exerciseType, validRepCount);
     navigation.replace('Summary');
-  }, [finishSet, navigation]);
+  }, [finishSet, navigation, validRepCount, exerciseType, recordExercise]);
 
   const flipCamera = useCallback(() => {
     setFacing((f) => (f === 'front' ? 'back' : 'front'));

@@ -1,120 +1,148 @@
 <p align="center">
-  <img src="ImagesForGithub/AppLogo.png" width="120" alt="FitCounter Logo" />
+  <img src="Github_Images/FitAlarmyIntroduction.png" alt="FitAlarmly Introduction" width="800" />
 </p>
 
-<h1 align="center">FitCounter</h1>
+---
+
+## The Problem
 
 <p align="center">
-  Your phone distractions become your workout.
+  <img src="Github_Images/TheProblem.png" alt="The Problem — why snooze culture is harmful" width="800" />
 </p>
 
----
-
-## What is FitCounter?
-
-FitCounter is an Android fitness app that connects two problems most people face separately — **phone addiction** and **skipping exercise**.
-
-Start a Focus Session, pick apps to avoid (YouTube, Instagram, TikTok), and set a timer. If you open one of those apps, you earn **exercise debt** — a set of push-ups, sit-ups, or squats that must be completed using the phone camera before the debt clears.
-
-The camera counts your reps in real time and scores your form. You cannot fake it.
+Most people hit snooze 2–3 times every morning. Alarm apps offer zero resistance — one swipe and you're back asleep. Morning inactivity sets a passive, low-energy tone for the whole day.
 
 ---
 
-## Screenshots
-
-<table align="center">
-  <tr>
-    <td align="center"><img src="ImagesForGithub/Iphone1.png" width="280" alt="Live Rep Counting" /><br/><sub><b>Live Rep Counting</b></sub></td>
-    <td width="32"></td>
-    <td align="center"><img src="ImagesForGithub/Iphone2.png" width="280" alt="Home Screen" /><br/><sub><b>Home Screen</b></sub></td>
-  </tr>
-  <tr><td colspan="3" height="24"></td></tr>
-  <tr>
-    <td align="center"><img src="ImagesForGithub/Iphone3.png" width="280" alt="Workout Plan" /><br/><sub><b>Workout Plan</b></sub></td>
-    <td width="32"></td>
-    <td align="center"><img src="ImagesForGithub/Iphone4.png" width="280" alt="AI Coach" /><br/><sub><b>AI Coach</b></sub></td>
-  </tr>
-</table>
-
----
-
-## Core Features
-
-| Feature | Description |
-|---|---|
-| **Real-time rep counting** | Camera-based pose detection counts push-ups, sit-ups, and squats at 30 fps |
-| **Rep scoring** | Every rep scored 0–100 across depth, form, stability, and tempo |
-| **Focus sessions** | Block distracting apps during a timed session |
-| **Exercise debt** | Opening a blocked app adds penalty sets — paid back through camera-verified reps |
-| **AI Coach** | Chat interface for personalised workout plans powered by Groq |
-| **Workout plans** | Instructor-designed plans or AI-generated custom plans |
-| **Google Calendar sync** | Workout schedule pushed directly to your calendar |
-| **XP & Leaderboard** | Earn XP per session, compete on a global Firebase leaderboard |
-
----
-
-## Supported Exercises
+## Our Solution
 
 <p align="center">
-  <img src="ImagesForGithub/pushup.png" width="220" alt="Push-up" />
-  &nbsp;&nbsp;
-  <img src="ImagesForGithub/situps.png" width="220" alt="Sit-up" />
-  &nbsp;&nbsp;
-  <img src="ImagesForGithub/squats.png" width="220" alt="Squat" />
+  <img src="Github_Images/TheSolution.png" alt="The Solution — dismiss by exercise or math" width="800" />
 </p>
 
-<p align="center"><b>Push-ups &nbsp;&nbsp;|&nbsp;&nbsp; Sit-ups &nbsp;&nbsp;|&nbsp;&nbsp; Squats</b></p>
+FitAlarmly turns your morning alarm into a fitness habit through **exercise rep-counting, math challenges, and form scoring** built on real-time ML Kit pose detection.
+
+`Alarm rings → Exercise / Math → Camera-verified → Dismissed`
 
 ---
 
-## System Architecture
+## App Screens
+
+### Home Screen
 
 <p align="center">
-  <img src="ImagesForGithub/SystemArchi.jpeg" width="800" alt="System Architecture" />
+  <img src="Github_Images/HomeScreen.png" alt="Home Screen — set alarms and start quick exercise" width="800" />
 </p>
 
-The app is structured in four layers:
+Set alarms with a dismiss challenge, or jump straight into a Quick Exercise set. Each alarm shows its time, repeat schedule, and configured dismiss rule at a glance.
 
-1. **React Native UI** — screens, overlays, and navigation
-2. **Zustand State Stores** — exercise, focus, auth, calendar persisted via AsyncStorage
-3. **TypeScript Core Logic** — pure modules for angle calculation, smoothing, state machine, and scoring
-4. **Native Android (Kotlin)** — ML Kit pose detection plugin, AccessibilityService for app monitoring
+---
 
-The JS/native boundary is crossed via `runOnJS()` from VisionCamera worklets, keeping the camera thread unblocked.
+### Exercise Screen
+
+<p align="center">
+  <img src="Github_Images/ExerciseScreen.png" alt="Exercise Screen — live rep counting with form feedback" width="800" />
+</p>
+
+The camera counts your reps live. Form hints appear in real time, and a rep only counts if it passes the scoring threshold — you can't fake it.
+
+---
+
+### Math Dismiss Screen
+
+<p align="center">
+  <img src="Github_Images/MathDismissScreen.png" alt="Math Dismiss Screen — solve problems to silence the alarm" width="800" />
+</p>
+
+Solve a configurable number of arithmetic problems to dismiss the alarm. Three difficulty levels ensure the challenge matches your preference. You can also switch to exercise mid-session.
+
+---
+
+## Features
+
+- **Set alarms** — scrollable 12-hour time wheels, a label, and repeat (Once / Daily / specific weekdays).
+- **Native alarm** — `AlarmManager`-scheduled, fires when the app is closed or the screen is locked, rings continuously via a foreground service until dismissed, and re-arms after reboot.
+- **Dismiss by exercise** — pick push-ups, sit-ups or squats; the camera counts your reps (front/back, flippable) and stops the alarm at the target count.
+- **Dismiss by math** — solve N problems. Difficulty:
+  - **Easy** — two 2-digit numbers, `+ / −` only (e.g. `22 + 57`)
+  - **Medium** — 50% 2-digit, 40% 3-digit `+ / −`, 10% `× / ÷` of 2-digit numbers
+  - **Hard** — 60% 3-digit `+ / −`, 10% 2-digit `+ / −`, 30% `× / ÷` of 2-digit numbers
+- **Quick Exercise** — start a camera-counted set any time from the home screen.
+- **Stats** — total reps, calories burned, workouts completed, a per-exercise breakdown, and a selectable avatar.
 
 ---
 
 ## How Rep Counting Works
 
-Each camera frame passes through a five-stage pipeline:
+### Why It's Hard
+
+<p align="center">
+  <img src="Github_Images/WhyRepCountingIsHard.png" alt="Why rep counting is hard — the core technical challenge" width="800" />
+</p>
+
+### Why Google ML Kit
+
+<p align="center">
+  <img src="Github_Images/WhyGoogleMLKit.png" alt="Why Google ML Kit was chosen over alternatives" width="800" />
+</p>
+
+Each camera frame runs through a five-stage pipeline on a native thread:
 
 ```
-Camera Frame (native thread)
+Camera frame (native thread)
      ↓
 Google ML Kit — 33 body landmarks at ~30 fps
      ↓
-Joint Angle Calculation — dot product formula on 3 landmarks
+Joint-angle calculation — from 3 landmarks
      ↓
-Signal Smoothing — spike rejection (>35°/frame) + EMA filter (α=0.4)
+Signal smoothing — spike rejection + EMA filter
      ↓
-State Machine — IDLE → DOWN → UP → rep counted (3-frame debounce)
+State machine — IDLE → DOWN → UP → rep counted (debounced)
      ↓
-Scoring — depth×0.4 + form×0.3 + stability×0.2 + tempo×0.1
+Scoring — depth / form / stability / tempo (low-quality reps don't count)
 ```
 
-Reps scoring below 40 are not counted. This is the anti-cheat layer.
+### How Errors Are Minimised
 
-### Why Google ML Kit over alternatives
+<p align="center">
+  <img src="Github_Images/MinimisedErrorHow.png" alt="How errors are minimised — smoothing, debounce, scoring" width="800" />
+</p>
 
-| Option | Reason not used |
-|---|---|
-| MediaPipe | Ships with skeleton rendering pipeline overhead we don't need — we only use landmark coordinates to calculate angles |
-| OpenPose | Requires GPU; too slow for real-time mobile |
-| TensorFlow Lite | Requires training your own model |
-| PoseNet | Only 17 landmarks; deprecated |
-| Accelerometer | Trivial to cheat; cannot detect form |
+### Camera Angle Detection
 
-ML Kit runs entirely on-device with no API key, returns clean landmark coordinates via STREAM\_MODE at 30 fps, and integrates directly into VisionCamera's native frame processor.
+<p align="center">
+  <img src="Github_Images/CameraAngleDetection.png" alt="Camera Angle Detection — front vs side view via shoulder-width ratio" width="800" />
+</p>
+
+The app auto-detects whether the camera is facing front or side using shoulder-width ratio in normalised frame space. A 15-frame majority vote prevents mid-rep flickering. Each exercise module then selects the correct joints for the detected angle.
+
+### Rep Scoring System
+
+<p align="center">
+  <img src="Github_Images/RepScoringSystem.png" alt="Rep Scoring System — Depth 40%, Form 30%, Stability 20%, Tempo 10%" width="800" />
+</p>
+
+| Dimension | Weight | Measures |
+|---|---|---|
+| Depth | 40% | Did you go low enough? |
+| Form | 30% | Was your body straight? |
+| Stability | 20% | Was the motion smooth? |
+| Tempo | 10% | Was the speed right? |
+
+**Score < 40 → rep not counted.** This is the cheat-prevention layer.
+
+### Accuracy Bottlenecks
+
+<p align="center">
+  <img src="Github_Images/AccuracyBottlenecks.png" alt="Accuracy Bottlenecks — lighting, clothing, phone placement, occlusion, 30fps cap" width="800" />
+</p>
+
+Known limitations:
+- **Lighting** — dark rooms reduce landmark visibility confidence
+- **Clothing** — loose clothing obscures body-line angle measurement
+- **Phone placement** — must be propped at the right height; no tripod detection
+- **Occlusion** — if a key joint is hidden, that frame produces no angle
+- **30fps cap** — very fast reps near the 500ms limit can occasionally be missed
 
 ---
 
@@ -125,14 +153,10 @@ ML Kit runs entirely on-device with no API key, returns clean landmark coordinat
 | App framework | React Native CLI `0.74` |
 | Language | TypeScript |
 | Camera + frame processing | `react-native-vision-camera` v4 + `react-native-worklets-core` |
-| Pose detection | Google ML Kit Accurate Pose (Kotlin native plugin) |
-| State management | Zustand |
-| Navigation | React Navigation native stack |
-| Auth + database | Firebase Auth + Firestore |
-| AI backend | Node.js + Groq API |
-| App monitoring | Android AccessibilityService |
-
-> **Why React Native CLI over Expo:** Expo has no frame processor API. VisionCamera's frame processors run ML Kit on a dedicated native thread at 30 fps — essential for real-time rep detection. Expo would require ejecting anyway.
+| Pose detection | Google ML Kit Accurate Pose (Kotlin native frame processor) |
+| Alarm | Custom Kotlin module: `AlarmManager` + full-screen notification + foreground service + boot receiver |
+| State | Zustand, persisted with AsyncStorage |
+| Navigation | React Navigation (native stack) |
 
 ---
 
@@ -140,19 +164,20 @@ ML Kit runs entirely on-device with no API key, returns clean landmark coordinat
 
 ```
 SystemProject/
-├── android/                  # Native Android project + Kotlin modules
-│   └── app/src/main/java/    # PoseDetectorPlugin, AppMonitor, AccessibilityService
+├── android/app/src/main/java/com/fitcounter/
+│   ├── alarm/             # AlarmModule, AlarmScheduler, AlarmReceiver,
+│   │                      # AlarmService, BootReceiver, AlarmRepeat, AlarmStorage
+│   └── posedetection/     # ML Kit pose-detection frame-processor plugin
 ├── src/
-│   ├── components/           # CameraView, ExerciseOverlay, FeedbackBanner, SetSummary
-│   ├── core/                 # angles.ts, smoothing.ts, stateMachine.ts, scoring.ts
-│   │   └── exercises/        # pushup.ts, situp.ts, squat.ts, angleDetector.ts
-│   ├── hooks/                # usePoseDetection, useExerciseTracker
-│   ├── screens/              # All app screens
-│   ├── store/                # Zustand stores (exercise, focus, auth, xp, calendar)
-│   ├── theme/                # Design tokens and colors
-│   └── utils/                # Constants (angle thresholds, score weights)
-├── backend/                  # Node.js AI chat backend
-└── ImagesForGithub/          # README assets
+│   ├── App.tsx            # navigation, alarm-fired routing, store hydration
+│   ├── screens/           # Home, Stats, Exercise, Summary, AlarmSetup,
+│   │                      # AlarmRing, DismissExercise, MathProblem
+│   ├── components/        # CameraView, FormGlow, SuccessOverlay, ui/*
+│   ├── core/              # rep-counting engine (state machine, scoring, exercises/*)
+│   ├── store/             # alarmStore, statsStore, avatarStore, exerciseStore
+│   ├── utils/             # mathGenerator, constants
+│   └── theme/             # design tokens
+└── Elements/              # image assets
 ```
 
 ---
@@ -163,71 +188,37 @@ SystemProject/
 
 - Node.js 18+
 - JDK 17
-- Android Studio with Android SDK and platform tools
-- A physical Android device or emulator with camera support
+- Android Studio with the Android SDK (compileSdk 34)
+- An Android device or emulator (the release build ships **arm64-v8a**)
 
-### Installation
-
-```bash
-# Clone the repo
-git clone <repo-url>
-cd SystemProject
-
-# Install dependencies
-npm install
-
-# Copy keys file and fill in your Firebase + Google credentials
-cp src/config/keys.example.ts src/config/keys.ts
-
-# Run on Android
-npx react-native run-android
-```
-
-### Backend (AI Chat)
-
-```bash
-cd backend
-cp .env.example .env   # add your Groq API key
-npm install
-node index.js
-```
-
-### Permissions required on device
-
-- **Camera** — for pose detection
-- **Usage Access** — for focus mode app monitoring (grant manually in Android settings)
-
----
-
-## Running Tests
-
-```bash
-# From SystemProject/
-npm test
-
-# From backend/
-cd backend && npm test
-```
-
-## Getting Started
-
-Install dependencies:
+### Run (debug)
 
 ```bash
 npm install
-```
-
-Start Metro:
-
-```bash
-npm run start
-```
-
-Run on Android:
-
-```bash
 npm run android
 ```
+
+### Build a Release APK
+
+A release keystore (`android/app/fitcounter-release.keystore`) is already configured.
+
+```bash
+cd android
+
+# all ABIs
+./gradlew assembleRelease
+
+# slim single-ABI build for modern phones (~60 MB)
+./gradlew assembleRelease -PsingleAbi -PreactNativeArchitectures=arm64-v8a
+```
+
+Output: `android/app/build/outputs/apk/release/app-release.apk`
+
+```bash
+adb install -r android/app/build/outputs/apk/release/app-release.apk
+```
+
+---
 
 ## Available Scripts
 
@@ -236,58 +227,22 @@ npm run android
 | `npm run start` | Start the Metro bundler |
 | `npm run android` | Build and launch the Android app |
 | `npm run test` | Run the Jest test suite |
-| `npm run lint` | Run ESLint across TypeScript source files |
+| `npm run lint` | Run ESLint over the TypeScript source |
 
-## Supported Exercises
-
-FitCounter currently supports three exercise types:
-
-- Push-ups: tracks elbow extension and body-line form.
-- Sit-ups: tracks hip angle and knee-position consistency.
-- Squats: tracks lower-body movement using the exercise logic in `src/core/exercises`.
-
-Each exercise has a dedicated rule module so thresholds, ideal ranges, and form feedback can be adjusted without rewriting the camera or UI layers.
+---
 
 ## Permissions
 
-The app requests these Android permissions:
+`CAMERA`, `POST_NOTIFICATIONS`, `VIBRATE`, `WAKE_LOCK`, `USE_EXACT_ALARM`,
+`SCHEDULE_EXACT_ALARM`, `USE_FULL_SCREEN_INTENT`, `RECEIVE_BOOT_COMPLETED`,
+`FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_MEDIA_PLAYBACK`.
 
-- `CAMERA` for live pose tracking.
-- `PACKAGE_USAGE_STATS` for blocked-app violation detection.
-- `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_SPECIAL_USE` for the monitoring service.
-- `POST_NOTIFICATIONS` for Android notification support.
-- `INTERNET` for standard React Native development and runtime networking.
+Grant the notification permission on first launch so alarms can show their full-screen ring.
 
-On Android, usage access is a protected permission and must be enabled manually in system settings for app-monitoring behavior to work.
+---
 
-## Development Notes
+## Notes
 
-- Keep movement algorithms inside `src/core` whenever possible.
-- Keep UI-specific code inside `src/components` and `src/screens`.
-- Use Zustand stores for cross-screen exercise and focus-session state.
-- Prefer pure functions for scoring, angle calculation, smoothing, and rep detection.
-- Native pose detection code lives under the Android project folder.
-
-## Troubleshooting
-
-If the camera does not open, confirm that device camera permission is granted and that the app is running on a real device or an emulator with camera support.
-
-If app blocking does not trigger on Android, enable usage access for FitCounter from system settings and restart the focus session.
-
-If native builds fail after dependency changes, clean the platform build output and reinstall dependencies:
-
-```bash
-npm install
-```
-
-For Android, you can also clean Gradle from the `android` directory:
-
-```bash
-./gradlew clean
-```
-
-## Documentation
-
-For a deeper explanation of the movement pipeline, scoring model, and system design decisions, see `ARCHITECTURE.md`.
-
-For Android Firebase authentication setup, see `AUTH_SETUP_ANDROID.md`.
+- **Android only** — the native alarm (lock-screen ring, exact scheduling, boot persistence) has no iOS counterpart in this project.
+- The alarm uses the device's default alarm tone.
+- The Android package id remains `com.fitcounter` (internal id only; the app name is FitAlarmly).
