@@ -21,3 +21,7 @@ android/app/src/main/assets/
 *.orig.*
 .metro-health-check*
 CSE3200_CLO_Assessment_Mapping.md
+
+# Generated React Native bundle assets (RN regenerates these at build time)
+android/app/src/main/res/drawable-*/elements_*.png
+android/app/src/main/res/drawable-*/node_modules_*.png

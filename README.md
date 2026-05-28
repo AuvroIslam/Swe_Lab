@@ -2,6 +2,33 @@
   <img src="Github_Images/FitAlarmyIntroduction.png" alt="FitAlarmly Introduction" width="800" />
 </p>
 
+<h1 align="center">FitAlarmly</h1>
+
+<p align="center">
+  An alarm clock you dismiss with push-ups or math — it won't let you snooze.
+</p>
+
+<p align="center">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Android-3DDC84?logo=android&logoColor=white" />
+  <img alt="React Native" src="https://img.shields.io/badge/React%20Native-0.74-61DAFB?logo=react&logoColor=white" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" />
+  <img alt="Native" src="https://img.shields.io/badge/Native-Kotlin-7F52FF?logo=kotlin&logoColor=white" />
+</p>
+
+## Contents
+
+- [The Problem](#the-problem)
+- [Our Solution](#our-solution)
+- [App Screens](#app-screens)
+- [Features](#features)
+- [How Rep Counting Works](#how-rep-counting-works)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Available Scripts](#available-scripts)
+- [Permissions](#permissions)
+- [Notes](#notes)
+
 ---
 
 ## The Problem
@@ -22,7 +49,7 @@ Most people hit snooze 2–3 times every morning. Alarm apps offer zero resistan
 
 FitAlarmly turns your morning alarm into a fitness habit through **exercise rep-counting, math challenges, and form scoring** built on real-time ML Kit pose detection.
 
-`Alarm rings → Exercise / Math → Camera-verified → Dismissed`
+`Alarm rings → do an exercise (camera-counted) or solve math → alarm stops`
 
 ---
 
@@ -122,27 +149,11 @@ The app auto-detects whether the camera is facing front or side using shoulder-w
   <img src="Github_Images/RepScoringSystem.png" alt="Rep Scoring System — Depth 40%, Form 30%, Stability 20%, Tempo 10%" width="800" />
 </p>
 
-| Dimension | Weight | Measures |
-|---|---|---|
-| Depth | 40% | Did you go low enough? |
-| Form | 30% | Was your body straight? |
-| Stability | 20% | Was the motion smooth? |
-| Tempo | 10% | Was the speed right? |
-
-**Score < 40 → rep not counted.** This is the cheat-prevention layer.
-
 ### Accuracy Bottlenecks
 
 <p align="center">
   <img src="Github_Images/AccuracyBottlenecks.png" alt="Accuracy Bottlenecks — lighting, clothing, phone placement, occlusion, 30fps cap" width="800" />
 </p>
-
-Known limitations:
-- **Lighting** — dark rooms reduce landmark visibility confidence
-- **Clothing** — loose clothing obscures body-line angle measurement
-- **Phone placement** — must be propped at the right height; no tripod detection
-- **Occlusion** — if a key joint is hidden, that frame produces no angle
-- **30fps cap** — very fast reps near the 500ms limit can occasionally be missed
 
 ---
 
