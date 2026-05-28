@@ -2,6 +2,8 @@
 src/config/keys.ts
 
 node_modules/
+.vscode/
+.idea/
 .bundle/
 vendor/bundle/
 ios/Pods/
